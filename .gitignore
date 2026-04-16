@@ -1,0 +1,8 @@
+.env
+__pycache__/
+*.pid
+*.log
+*.db
+user_profiles.json
+telegram_offset.txt
+wa_img/

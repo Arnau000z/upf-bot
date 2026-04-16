@@ -1,0 +1,61 @@
+{
+  "_nota": "Generat automàticament per scraper.py — NO editar manualment.\nConté les assignatures obligatòries per titulació i any curricular,\nextretes directament de la API de gestioacademica.upf.edu.",
+  "per_any": {
+    "informatica": {
+      "1": [
+        "Disseny Funcional de Programes",
+        "Estructures de Dades",
+        "Matemàtica Discreta II",
+        "Xarxes"
+      ],
+      "2": [
+        "Aprenentatge Automàtic",
+        "Enginyeria d'Interacció",
+        "Enginyeria de Software",
+        "Introducció a la Programació Paral·lela i Distribuida"
+      ]
+    },
+    "dades": {
+      "1": [
+        "Disseny Funcional de Programes",
+        "Equacions Diferencials",
+        "Estructura de Dades",
+        "Xarxes"
+      ],
+      "2": [
+        "Aprenentatge Automàtic",
+        "Arquitectura de Xarxes",
+        "Introducció a la Programació Paral·lela i Distribuïda",
+        "Tècniques d'Optimització"
+      ]
+    },
+    "audiovisuals": {
+      "1": [
+        "Equacions Diferencials",
+        "Estructura de Dades",
+        "Física",
+        "Xarxes"
+      ],
+      "2": [
+        "Aprenentatge Automàtic",
+        "Arquitectura de Xarxes",
+        "Processament d'Imatges",
+        "Teoria de la Informació i Codificació"
+      ]
+    },
+    "xarxes": {
+      "1": [
+        "Equacions Diferencials",
+        "Estructures de Dades",
+        "Física",
+        "Xarxes"
+      ],
+      "2": [
+        "Aprenentatge Automàtic",
+        "Arquitectura de Xarxes",
+        "Teoria de la Informació i Codificació",
+        "Tècniques d'Optimització"
+      ]
+    }
+  }
+}
