@@ -1,12 +1,12 @@
 """
-Parser de consultas de horario — responde sin llamar a la API de Claude.
+Parser de consultas de horario — responde sin llamar a la API del LLM.
 
 Cubre el ~85% de las consultas reales:
   - fecha relativa: hoy, mañana, esta semana, el jueves...
   - asignatura: por nombre exacto, parcial o con typos
   - combinación: "Seguretat esta semana"
 
-Devuelve None cuando la pregunta es ambigua o conversacional → va a Claude.
+Devuelve None cuando la pregunta es ambigua o conversacional → va al LLM.
 """
 import re
 import unicodedata
@@ -100,7 +100,7 @@ def _token_match(query_tok: str, subject_tok: str) -> bool:
 def _detectar_asignatura(tnorm: str, nombres: list[str]) -> list[str]:
     """
     Busca la asignatura más probable en la consulta.
-    Retorna [] (ninguna), [nombre] (encontrada) o [n1, n2] (ambigua → Claude).
+    Retorna [] (ninguna), [nombre] (encontrada) o [n1, n2] (ambigua → LLM).
     """
     q_tokens = [t for t in tnorm.split() if len(t) >= 5]  # mín 5 chars evita falsos positivos
     if not q_tokens:
@@ -224,7 +224,7 @@ def eventos_para_imagen(texto: str, datos: dict, hoy: date):
 def respuesta_local(texto: str, datos: dict, hoy: date) -> str | None:
     """
     Intenta responder la consulta con reglas.
-    Retorna la respuesta (str) o None si hay que llamar a Claude.
+    Retorna la respuesta (str) o None si hay que llamar al LLM.
     """
     from datetime import datetime as dt
 
@@ -246,7 +246,7 @@ def respuesta_local(texto: str, datos: dict, hoy: date) -> str | None:
     nombres = list({ev['nombre'] for ev in eventos_todos})
     asigs   = _detectar_asignatura(tnorm, nombres)
 
-    # Asignatura ambigua → Claude para desambiguar
+    # Asignatura ambigua → LLM para desambiguar
     if len(asigs) > 2:
         return None
 
@@ -290,5 +290,5 @@ def respuesta_local(texto: str, datos: dict, hoy: date) -> str | None:
         ]
         return _fmt_asignatura(evs, nombre)
 
-    # ── No detectado → Claude ──────────────────────────────────────────────────
+    # ── No detectado → LLM ──────────────────────────────────────────────────
     return None

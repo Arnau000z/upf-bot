@@ -19,7 +19,7 @@ from bot import (
     _now, _today, log,
     cargar_datos, filtrar_por_perfil, filtrar_ventana,
     guardar_perfil, obtener_perfil, perfil_resumen,
-    DEGREE_LABELS, preguntar_a_claude,
+    DEGREE_LABELS, preguntar_al_llm,
 )
 from query_parser import eventos_para_imagen, _norm, _detectar_asignatura
 from renderer import render_dia, render_semana
@@ -273,13 +273,13 @@ def process_text(wa_id: str, text: str, datos: dict):
         except Exception as e:
             log(f"⚠️ WA render: {e}")
 
-    # Fallback: pregunta a Claude
+    # Fallback: pregunta al LLM
     try:
-        resposta = preguntar_a_claude(text, datos_usuario)
+        resposta = preguntar_al_llm(text, datos_usuario)
         wa_text(wa_id, resposta)
-        log(f"   → Claude WA")
+        log(f"   → LLM WA")
     except Exception as e:
-        log(f"⚠️ WA Claude: {e}")
+        log(f"⚠️ WA LLM: {e}")
         wa_menu_rapid(wa_id)
 
 

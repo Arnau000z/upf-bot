@@ -1,71 +1,47 @@
 # UPF Bot
 
-Telegram bot that lets students from the 4 Engineering degrees at Universitat Pompeu Fabra query their class schedules in natural language — instead of navigating the university's academic portal.
+A Telegram bot where UPF engineering students ask for their timetable in plain words instead of fighting the university portal.
 
-## Motivation
+The academic portal is slow and awkward on a phone. What I wanted was to type "what do I have tomorrow?" or "when's my next Algorithms class?" and get an answer. It covers the four engineering degrees at Universitat Pompeu Fabra and was running live for students during the 2025-26 term.
 
-The UPF academic portal is slow and not mobile-friendly. Students needed a faster way to ask things like *"What do I have tomorrow?"* or *"When is my next Algorithms class?"* — directly from Telegram.
+## What it does
 
-## Features
+- Answers natural-language timetable questions, in a daily or weekly view
+- Draws the schedule as a PNG image with Pillow
+- Sets up your profile with inline buttons: degree, then year, then group
+- Lets an admin re-scrape the portal and refresh the data from a command
+- Limits how often each user can hit the LLM, to keep costs down
 
-- Natural language schedule queries powered by **Claude Haiku** (with prompt caching to reduce costs)
-- Visual schedule rendering as PNG images (daily and weekly views)
-- User profile setup via inline buttons: degree → year → group
-- ~85% of queries resolved locally without calling the AI (custom query parser)
-- Admin command to re-scrape the university portal and refresh data
-- Rate limiting per user to control API costs
+## The interesting part
 
-## Stack
-
-| Layer | Technology |
-|---|---|
-| Bot framework | Python + Telegram Bot API (polling) |
-| AI | Anthropic Claude Haiku with prompt caching |
-| Image rendering | Pillow |
-| Data source | UPF academic portal (scraped) |
-| Runtime | Linux VPS, nohup background process |
-
-## Architecture
+Calling an LLM for every message would be slow and wasteful, so most questions never reach it. A rule-based parser handles the common ones locally (around 85% of queries). Only ambiguous or conversational questions go to the LLM, with prompt caching on the big timetable context.
 
 ```
-scraper.py          ← scrapes UPF portal → horarios.json + curriculum.json
-query_parser.py     ← resolves ~85% of queries locally (no AI call)
-bot.py              ← Telegram handler, user profiles, Claude fallback
-renderer.py         ← generates PNG schedule images with Pillow
+scraper.py        scrapes the portal into horarios.json and curriculum.json
+query_parser.py   answers common queries locally, no LLM call
+bot.py            Telegram handlers, user profiles, LLM fallback
+renderer.py       PNG schedule images
 ```
 
-**Pipeline per message:**
-```
-horarios.json (1800+ events, cached in RAM)
-    ↓ filter by user profile (degree + year + group)
-    ↓ filter to 14-day window
-    ↓ query_parser → renderer / Claude
-```
+Per message: load the cached events (1,800+), filter by degree, year and group, keep a 14-day window, then parse locally or ask the LLM.
 
-## Supported degrees
-
-- Enginyeria en Informàtica
-- Enginyeria Matemàtica en Ciència de Dades
-- Enginyeria en Sistemes Audiovisuals
-- Enginyeria de Xarxes de Telecomunicació
-
-## Setup
+## Run it
 
 ```bash
-cp .env.example .env
-# Fill in your credentials in .env
+cp .env.example .env     # ANTHROPIC_API_KEY, TELEGRAM_TOKEN, ADMIN_CHAT_IDS
 bash start.sh
 tail -f upf-bot.log
 ```
 
-**Required environment variables** (see `.env.example`):
-```
-ANTHROPIC_API_KEY=sk-ant-...
-TELEGRAM_TOKEN=...
-ADMIN_CHAT_IDS=your_telegram_id
-```
+`whatsapp_webhook.py` is an experimental WhatsApp front end for the same logic; setup notes are in `WHATSAPP.md`.
 
-## Status
+## Built with
 
-> **Work in progress.** Currently running live for UPF students in T3 2025-26.
-> Planned improvements: multi-language support, notifications for schedule changes, WhatsApp integration.
+Python, Telegram Bot API, Pillow, an LLM with prompt caching.
+
+## What I'd do next
+
+- Notifications when the schedule changes
+- More languages
+
+© 2026 Arnau Mas

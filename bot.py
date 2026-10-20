@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Bot de Horarios UPF — 4 Enginyeries
-Telegram + Claude Haiku con prompt caching + onboarding con botones
+Telegram + LLM con prompt caching + onboarding con botones
 """
 import requests
 import anthropic
@@ -30,7 +30,7 @@ CURRICULUM_FILE = "curriculum.json"
 PROFILES_FILE   = "user_profiles.json"
 LOG_FILE        = "upf-bot.log"
 OFFSET_FILE     = "telegram_offset.txt"
-VENTANA_DIAS    = 14   # días hacia adelante que se pasan a handlers y Claude
+VENTANA_DIAS    = 14   # días hacia adelante que se pasan a handlers y el LLM
 
 # Estudios de cada titulación (old plan + new plan)
 # Teclado persistente mostrado al usuario
@@ -56,7 +56,7 @@ DEGREE_LABELS = {
     "xarxes":       "📡 Enginyeria de Xarxes de Telecomunicació",
 }
 
-claude = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+llm = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
 
 # Estado en memoria para onboarding activo {str(chat_id): {step, cursos, grups}}
 onboard_estado = {}
@@ -65,13 +65,13 @@ onboard_estado = {}
 _qk_subjects: dict = {}
 
 # ── Rate limiting ──────────────────────────────────────────────────────────────
-# Máximo RATE_MAX_CALLS llamadas a Claude por usuario en una ventana de RATE_WINDOW segundos
+# Máximo RATE_MAX_CALLS llamadas al LLM por usuario en una ventana de RATE_WINDOW segundos
 RATE_MAX_CALLS = 10
 RATE_WINDOW    = 60   # segundos
 _rate_log: dict = {}  # {chat_id: [timestamps]}
 
 def _rate_ok(chat_id: int) -> bool:
-    """Devuelve True si el usuario puede hacer otra llamada a Claude."""
+    """Devuelve True si el usuario puede hacer otra llamada al LLM."""
     now  = time.time()
     key  = str(chat_id)
     hist = _rate_log.get(key, [])
@@ -245,7 +245,7 @@ def intentar_actualizar_auto():
         log(f"⚠️  Error en auto-scrape: {e}")
 
 
-# ── Formateo para el prompt de Claude ─────────────────────────────────────────
+# ── Formateo para el prompt del LLM ─────────────────────────────────────────
 def filtrar_eventos(eventos: list, desde: date, hasta: date) -> list:
     result = []
     for ev in eventos:
@@ -308,10 +308,10 @@ REGLES:
 5. Si pregunten per dates fora del període → redirigeix a gestioacademica.upf.edu."""
 
 
-def preguntar_a_claude(pregunta: str, datos: dict) -> str:
+def preguntar_al_llm(pregunta: str, datos: dict) -> str:
     system_prompt = construir_system_prompt(datos)
     try:
-        resp = claude.messages.create(
+        resp = llm.messages.create(
             model="claude-haiku-4-5-20251001",
             max_tokens=600,
             system=[{"type": "text", "text": system_prompt, "cache_control": {"type": "ephemeral"}}],
@@ -319,7 +319,7 @@ def preguntar_a_claude(pregunta: str, datos: dict) -> str:
         )
         return resp.content[0].text
     except Exception as e:
-        log(f"⚠️ Claude error: {e}")
+        log(f"⚠️ LLM error: {e}")
         return "❌ Error al consultar el asistente. Inténtalo de nuevo."
 
 
